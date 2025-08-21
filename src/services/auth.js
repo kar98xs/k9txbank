@@ -98,7 +98,7 @@ const authService = {
 
   getBlogs: async () => {
     const token = localStorage.getItem("token");
-    const response = await axios.get(`${API_URL}/blogs/`, {
+    const response = await axios.get(`${API_URL}/auth/blogs/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -110,7 +110,7 @@ const authService = {
     form.append("title", title);
     form.append("content", content);
     if (imageFile) form.append("image", imageFile);
-    const response = await axios.post(`${API_URL}/blogs/`, form, {
+    const response = await axios.post(`${API_URL}/auth/blogs/`, form, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
@@ -121,7 +121,7 @@ const authService = {
 
   deleteBlog: async (blogId) => {
     const token = localStorage.getItem("token");
-    const response = await axios.delete(`${API_URL}/blogs/${blogId}/`, {
+    const response = await axios.delete(`${API_URL}/auth/blogs/${blogId}/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -266,3 +266,4 @@ const authService = {
 };
 
 export default authService;
+
