@@ -210,13 +210,23 @@ const authService = {
   },
 
   actOnLoan: async (loanId, action) => {
-    const token = localStorage.getItem("token");
-    const response = await axios.post(
-      `${API_URL}/loans/${loanId}/${action}/`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return response.data;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/loans/${loanId}/${action}/`,
+        {},
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Loan ${action} error:`, error);
+      throw error;
+    }
   },
 
   // Axios interceptor for handling token refresh
@@ -266,3 +276,4 @@ const authService = {
 };
 
 export default authService;
+
