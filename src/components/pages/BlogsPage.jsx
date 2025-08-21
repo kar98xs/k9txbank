@@ -71,24 +71,31 @@ export default function BlogsPage() {
     if (blogs.length) fetchAll();
   }, [blogs]);
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("content", form.content);
-      if (form.imageFile) {
-        formData.append("image", form.imageFile);
-        console.log("Uploading image:", form.imageFile.name);
-      }
-      const response = await authService.createBlog(formData);
-      console.log("Blog created:", response);
-      setForm({ title: "", content: "", imageFile: null });
-      load();
-    } catch (error) {
-      console.error("Blog creation error:", error);
+ const onSubmit = async (e) => {
+  e.preventDefault();
+  const title = (form.title ?? '').trim();
+  const content = (form.content ?? '').trim();
+
+  if (!title || !content) {
+    // show a toast or inline message instead of sending
+    return;
+  }
+
+  try {
+    const fd = new FormData();
+    fd.append('title', title);
+    fd.append('content', content);
+    if (form.imageFile instanceof File) {
+      fd.append('image', form.imageFile);
     }
-  };
+    await authService.createBlog(fd); // don't set Content-Type manually
+    setForm({ title: '', content: '', imageFile: null });
+    load();
+  } catch (error) {
+    console.error('Blog creation error:', error);
+  }
+};
+
 
   const submitComment = async (blogId) => {
     const content = (commentInputByBlog[blogId] || "").trim();
@@ -347,3 +354,4 @@ export default function BlogsPage() {
     </Paper>
   );
 }
+
