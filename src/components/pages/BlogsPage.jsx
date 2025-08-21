@@ -13,6 +13,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import authService from "../../services/auth";
 import { useAuth } from "../../contexts/AuthContext";
+import { toast } from "react-toastify";
 
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return "";
@@ -181,8 +182,17 @@ export default function BlogsPage() {
   const handleDeleteBlog = async (blogId) => {
     try {
       await authService.deleteBlog(blogId);
-      setBlogs((prev) => prev.filter((b) => b.id !== blogId));
-    } catch {}
+      // Refresh blogs list
+      load();
+      toast.success("Blog deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete blog:", error);
+      toast.error(
+        `Failed to delete blog: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    }
   };
 
   return (
@@ -322,17 +332,14 @@ export default function BlogsPage() {
                   Comment
                 </Button>
               </Box>
-              {user?.is_staff && (
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Tooltip title="Delete blog">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDeleteBlog(b.id)}
-                    >
-                      <DeleteIcon sx={{ color: "#ff6b6b" }} />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+              {user?.is_admin && (
+                <IconButton
+                  onClick={() => handleDeleteBlog(b.id)}
+                  color="error"
+                  sx={{ ml: "auto" }}
+                >
+                  <DeleteIcon />
+                </IconButton>
               )}
               <Box sx={{ mt: 1.5 }}>
                 {renderComments(b.id, commentsByBlog[b.id] || [])}
