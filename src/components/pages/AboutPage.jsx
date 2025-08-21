@@ -119,7 +119,7 @@ const AboutPage = () => {
                 variant="contained"
                 color="primary"
                 component="a"
-                href="https://github.com/K9TX/CompleteBankSystem"
+                href="https://github.com/K9TX/fullBankSystem"
                 target="_blank"
                 rel="noopener"
                 sx={{ mt: 1, fontWeight: 800, boxShadow: "0 0 16px rgba(45,127,249,0.45)" }}
@@ -135,4 +135,5 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
 
