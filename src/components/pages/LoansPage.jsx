@@ -8,7 +8,6 @@ import {
   Divider,
   Chip,
 } from "@mui/material";
-import { toast } from "react-toastify";
 import authService from "../../services/auth";
 
 export default function LoansPage() {
@@ -22,7 +21,7 @@ export default function LoansPage() {
   const me = authService.getCurrentUser();
   const isAdmin = !!me?.is_staff;
 
-  const loadLoans = async () => {
+  const load = async () => {
     try {
       const data = await authService.getLoans();
       setLoans(Array.isArray(data) ? data : []);
@@ -32,7 +31,7 @@ export default function LoansPage() {
   };
 
   useEffect(() => {
-    loadLoans();
+    load();
   }, []);
 
   const submit = async (e) => {
@@ -55,23 +54,15 @@ export default function LoansPage() {
         purpose: "",
         interest_rate: "10.00",
       });
-      loadLoans();
+      load();
     } catch {}
   };
 
-  const handleLoanAction = async (loanId, action) => {
+  const act = async (loanId, action) => {
     try {
       await authService.actOnLoan(loanId, action);
-      loadLoans();
-      toast.success(`Loan ${action}ed successfully`);
-    } catch (error) {
-      console.error(`Failed to ${action} loan:`, error);
-      toast.error(
-        `Failed to ${action} loan: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    }
+      load();
+    } catch {}
   };
 
   const statusColor = (s) => {
@@ -183,18 +174,18 @@ export default function LoansPage() {
                   {l.status === "PENDING" && isAdmin && (
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        variant="contained"
+                        size="small"
+                        variant="outlined"
                         color="success"
-                        onClick={() => handleLoanAction(l.id, "approve")}
-                        disabled={l.status !== "PENDING"}
+                        onClick={() => act(l.id, "approve")}
                       >
                         Approve
                       </Button>
                       <Button
-                        variant="contained"
+                        size="small"
+                        variant="outlined"
                         color="error"
-                        onClick={() => handleLoanAction(l.id, "reject")}
-                        disabled={l.status !== "PENDING"}
+                        onClick={() => act(l.id, "reject")}
                       >
                         Reject
                       </Button>
