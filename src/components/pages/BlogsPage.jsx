@@ -71,31 +71,44 @@ export default function BlogsPage() {
     if (blogs.length) fetchAll();
   }, [blogs]);
 
- const onSubmit = async (e) => {
-  e.preventDefault();
-  const title = (form.title ?? '').trim();
-  const content = (form.content ?? '').trim();
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Form submission started:", form); // Debug log
 
-  if (!title || !content) {
-    // show a toast or inline message instead of sending
-    return;
-  }
+    try {
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("content", form.content);
 
-  try {
-    const fd = new FormData();
-    fd.append('title', title);
-    fd.append('content', content);
-    if (form.imageFile instanceof File) {
-      fd.append('image', form.imageFile);
+      if (form.imageFile) {
+        formData.append("image", form.imageFile);
+        console.log("Image being uploaded:", {
+          name: form.imageFile.name,
+          size: form.imageFile.size,
+          type: form.imageFile.type,
+        });
+      }
+
+      // Log FormData contents
+      for (let pair of formData.entries()) {
+        console.log("FormData content:", pair[0], pair[1]);
+      }
+
+      const response = await authService.createBlog(formData);
+      console.log("Blog created successfully:", response);
+
+      // Clear form and reload blogs
+      setForm({ title: "", content: "", imageFile: null });
+      await load(); // Wait for blogs to reload
+    } catch (error) {
+      console.error("Blog creation error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      // You might want to add a toast notification here
     }
-    await authService.createBlog(fd); // don't set Content-Type manually
-    setForm({ title: '', content: '', imageFile: null });
-    load();
-  } catch (error) {
-    console.error('Blog creation error:', error);
-  }
-};
-
+  };
 
   const submitComment = async (blogId) => {
     const content = (commentInputByBlog[blogId] || "").trim();
@@ -216,14 +229,28 @@ export default function BlogsPage() {
       <Box
         component="form"
         onSubmit={onSubmit}
-        sx={{ display: "grid", gap: 2, mb: 3, maxWidth: 720 }}
+        sx={{
+          display: "grid",
+          gap: 2,
+          mb: 3,
+          maxWidth: 720,
+          "& > *": { width: "100%" }, // Make all children full width
+          '& button[type="submit"]': {
+            // Target submit button specifically
+            justifySelf: "flex-start", // Align submit button to the left
+          },
+        }}
       >
         <TextField
           fullWidth
           label="Title"
           value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, title: e.target.value }))
+          }
           required
+          error={!form.title}
+          helperText={!form.title ? "Title is required" : ""}
         />
         <TextField
           fullWidth
@@ -231,8 +258,12 @@ export default function BlogsPage() {
           rows={4}
           label="Content"
           value={form.content}
-          onChange={(e) => setForm({ ...form, content: e.target.value })}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, content: e.target.value }))
+          }
           required
+          error={!form.content}
+          helperText={!form.content ? "Content is required" : ""}
         />
         <Button
           component="label"
@@ -246,21 +277,38 @@ export default function BlogsPage() {
             hidden
             type="file"
             accept="image/*"
-            onChange={(e) =>
-              setForm({ ...form, imageFile: e.target.files?.[0] || null })
-            }
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                console.log("Image selected:", {
+                  name: file.name,
+                  size: file.size,
+                  type: file.type,
+                });
+                setForm((prev) => ({ ...prev, imageFile: file }));
+              }
+            }}
           />
         </Button>
         <Button
           type="submit"
           variant="contained"
+          disabled={!form.title || !form.content}
           sx={{
             py: 1.1,
             fontWeight: 700,
+            backgroundColor: "#2d7ff9", // Add this for visibility
+            color: "#ffffff", // Add this for visibility
             boxShadow: "0 0 16px rgba(45,127,249,0.45)",
+            "&:hover": {
+              backgroundColor: "#1e6be6", // Add hover effect
+            },
+            width: "fit-content", // Make button width fit content
+            alignSelf: "flex-start", // Align button to the left
+            minWidth: "120px", // Minimum width
           }}
         >
-          Post
+          Post Blog
         </Button>
       </Box>
       <Box
@@ -354,4 +402,3 @@ export default function BlogsPage() {
     </Paper>
   );
 }
-
