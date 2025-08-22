@@ -104,19 +104,31 @@ const authService = {
     return response.data;
   },
 
-  createBlog: async ({ title, content, imageFile = null }) => {
-    const token = localStorage.getItem("token");
-    const form = new FormData();
-    form.append("title", title);
-    form.append("content", content);
-    if (imageFile) form.append("image", imageFile);
-    const response = await axios.post(`${API_URL}/blogs/`, form, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response.data;
+  createBlog: async (formData) => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Creating blog with formData:", {
+        title: formData.get("title"),
+        content: formData.get("content"),
+        hasImage: formData.has("image"),
+      });
+
+      const response = await axios.post(`${API_URL}/blogs/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Blog created successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Blog creation failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
   },
 
   deleteBlog: async (blogId) => {
@@ -227,36 +239,43 @@ const authService = {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        console.log("Request config:", {
+          url: config.url,
+          method: config.method,
+          hasToken: !!token,
+        });
         return config;
       },
       (error) => {
+        console.error("Request interceptor error:", error);
         return Promise.reject(error);
       }
     );
 
+    // Add better error handling for token refresh
     axios.interceptors.response.use(
       (response) => response,
       async (error) => {
-        const originalRequest = error.config || {};
-        if (
-          error.response &&
-          error.response.status === 401 &&
-          !originalRequest._retry
-        ) {
+        const originalRequest = error.config;
+        if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           try {
             const refreshToken = localStorage.getItem("refreshToken");
-            if (!refreshToken) throw new Error("No refresh token");
+            if (!refreshToken) {
+              throw new Error("No refresh token available");
+            }
+            console.log("Attempting token refresh");
             const response = await axios.post(`${API_URL}/token/refresh/`, {
               refresh: refreshToken,
             });
-            localStorage.setItem("token", response.data.access);
-            originalRequest.headers = originalRequest.headers || {};
-            originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+            const newToken = response.data.access;
+            localStorage.setItem("token", newToken);
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
             return axios(originalRequest);
-          } catch (err) {
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
             authService.logout();
-            return Promise.reject(err);
+            throw refreshError;
           }
         }
         return Promise.reject(error);
@@ -266,5 +285,3 @@ const authService = {
 };
 
 export default authService;
-
-
