@@ -47,9 +47,7 @@ export default function BalancePage() {
       <Stack spacing={1} sx={{ mb: 3 }}>
         <Typography sx={{ color: '#bcd3ff' }}>Current Balance</Typography>
         <Typography variant="h3" sx={{ color: '#eaf2ff', fontWeight: 800 }}>₹{balance ?? '—'}</Typography>
-        {updatedAt && (
-          <Typography variant="caption" sx={{ color: '#9fb4ff' }}>Updated {updatedAt.toLocaleTimeString()}</Typography>
-        )}
+      
       </Stack>
       <Box>
         
@@ -57,3 +55,4 @@ export default function BalancePage() {
     </Paper>
   );
 }
+
