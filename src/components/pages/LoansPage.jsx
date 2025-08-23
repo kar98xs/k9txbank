@@ -8,6 +8,7 @@ import {
   Divider,
   Chip,
 } from "@mui/material";
+import { toast } from "react-toastify";
 import authService from "../../services/auth";
 
 export default function LoansPage() {
@@ -60,9 +61,14 @@ export default function LoansPage() {
 
   const act = async (loanId, action) => {
     try {
+      console.log(`Attempting to ${action} loan:`, loanId); // Debug log
       await authService.actOnLoan(loanId, action);
-      load();
-    } catch {}
+      toast.success(`Loan ${action}ed successfully`);
+      await load(); // Reload loans after action
+    } catch (error) {
+      console.error(`Failed to ${action} loan:`, error);
+      toast.error(error.response?.data?.message || `Failed to ${action} loan`);
+    }
   };
 
   const statusColor = (s) => {
