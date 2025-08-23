@@ -107,36 +107,43 @@ const authService = {
   createBlog: async (formData) => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Creating blog with formData:", {
-        title: formData.get("title"),
-        content: formData.get("content"),
-        hasImage: formData.has("image"),
-      });
-
       const response = await axios.post(`${API_URL}/blogs/`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Blog created successfully:", response.data);
+      console.log("Blog creation response:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Blog creation failed:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
+      console.error("Blog creation error:", error.response || error);
       throw error;
     }
   },
 
+  // Update the deleteBlog function with better error handling
   deleteBlog: async (blogId) => {
-    const token = localStorage.getItem("token");
-    const response = await axios.delete(`${API_URL}/blogs/${blogId}/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      console.log(`Attempting to delete blog ${blogId}`); // Debug log
+
+      const response = await axios.delete(`${API_URL}/blogs/${blogId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Blog deletion response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Blog deletion error:", {
+        message: error.message,
+        response: error.response?.data,
+      });
+      throw error;
+    }
   },
 
   getComments: async (blogId) => {
@@ -222,13 +229,32 @@ const authService = {
   },
 
   actOnLoan: async (loanId, action) => {
-    const token = localStorage.getItem("token");
-    const response = await axios.post(
-      `${API_URL}/loans/${loanId}/${action}/`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return response.data;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
+
+      console.log(`Making loan ${action} request:`, loanId); // Debug log
+
+      const response = await axios.post(
+        `${API_URL}/loans/${loanId}/${action}/`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(`Loan ${action} response:`, response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Loan ${action} error:`, {
+        message: error.message,
+        response: error.response?.data,
+      });
+      throw error;
+    }
   },
 
   // Axios interceptor for handling token refresh
@@ -239,43 +265,36 @@ const authService = {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-        console.log("Request config:", {
-          url: config.url,
-          method: config.method,
-          hasToken: !!token,
-        });
         return config;
       },
       (error) => {
-        console.error("Request interceptor error:", error);
         return Promise.reject(error);
       }
     );
 
-    // Add better error handling for token refresh
     axios.interceptors.response.use(
       (response) => response,
       async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        const originalRequest = error.config || {};
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          !originalRequest._retry
+        ) {
           originalRequest._retry = true;
           try {
             const refreshToken = localStorage.getItem("refreshToken");
-            if (!refreshToken) {
-              throw new Error("No refresh token available");
-            }
-            console.log("Attempting token refresh");
+            if (!refreshToken) throw new Error("No refresh token");
             const response = await axios.post(`${API_URL}/token/refresh/`, {
               refresh: refreshToken,
             });
-            const newToken = response.data.access;
-            localStorage.setItem("token", newToken);
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            localStorage.setItem("token", response.data.access);
+            originalRequest.headers = originalRequest.headers || {};
+            originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
             return axios(originalRequest);
-          } catch (refreshError) {
-            console.error("Token refresh failed:", refreshError);
+          } catch (err) {
             authService.logout();
-            throw refreshError;
+            return Promise.reject(err);
           }
         }
         return Promise.reject(error);
