@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { toast } from "react-toastify";
 import authService from "../../services/auth";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -200,9 +201,19 @@ export default function BlogsPage() {
 
   const handleDeleteBlog = async (blogId) => {
     try {
+      console.log("Deleting blog:", blogId); // Debug log
       await authService.deleteBlog(blogId);
-      setBlogs((prev) => prev.filter((b) => b.id !== blogId));
-    } catch {}
+      console.log("Blog deleted successfully"); // Debug log
+
+      // Remove the deleted blog from state
+      setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog.id !== blogId));
+
+      // Show success message
+      toast.success("Blog deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete blog:", error);
+      toast.error(error.response?.data?.error || "Failed to delete blog");
+    }
   };
 
   return (
