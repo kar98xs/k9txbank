@@ -1,26 +1,25 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
+  "version": 2,
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "handle": "filesystem"
     },
     {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
+      "src": "/app/?.*",
+      "dest": "index.html"
     },
     {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
+      "src": "/login/?",
+      "dest": "index.html"
     },
     {
-      "src": "/(.+)",
-      "dest": "/index.html"
+      "src": "/register/?",
+      "dest": "index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "index.html"
     }
   ],
-  "cleanUrls": true,
-  "trailingSlash": false
-
+  "cleanUrls": true
 }
