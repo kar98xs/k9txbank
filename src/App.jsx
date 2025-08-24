@@ -34,7 +34,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <Router>
+     <Router basename="/">
       <AuthProvider>
         <Routes>
           {/* Public Routes */}
