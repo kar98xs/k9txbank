@@ -4,8 +4,14 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  base: "/",
+  build: {
+    outDir: "dist",
+    sourcemap: true,
+  },
   server: {
+    port: 5173,
+    strictPort: true,
     proxy: {
       "/api": {
         target: "https://k9txelite.pythonanywhere.com",
@@ -18,9 +24,5 @@ export default defineConfig({
         secure: true,
       },
     },
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: true,
   },
 });
