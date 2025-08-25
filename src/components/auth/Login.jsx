@@ -55,7 +55,7 @@ const Login = () => {
         import.meta.env.VITE_API_URL || "https://k9txelite.pythonanywhere.com";
 
       // The URL matches the combined path from core/urls.py and accounts/urls.py
-      const response = await axios.post(`${API_URL}/api/api/auth/google/`, {
+        const response = await axios.post(`${API_URL}/auth/google/login/`, {
         credential: credentialResponse.credential,
       });
 
@@ -349,3 +349,4 @@ const Login = () => {
 };
 
 export default Login;
+
