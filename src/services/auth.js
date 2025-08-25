@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/auth';
 
@@ -94,4 +95,4 @@ export const useAuth = () => {
 };
 
 
-export default AuthContext; 
+export default AuthContext;
