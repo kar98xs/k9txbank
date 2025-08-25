@@ -55,11 +55,10 @@ const Login = () => {
         import.meta.env.VITE_API_URL ||
         "https://k9txelite.pythonanywhere.com/api";
 
-      // Send the token to your backend
       const response = await axios.post(
-        `${API_URL}/auth/google/login/`,
+        `${API_URL}/auth/google/`,
         {
-          token: credentialResponse.credential,
+          credential: credentialResponse.credential,
         },
         {
           headers: {
@@ -69,21 +68,27 @@ const Login = () => {
       );
 
       if (response.data.access) {
-        // Store the tokens
+        // Store tokens
         localStorage.setItem("token", response.data.access);
-        if (response.data.refresh) {
-          localStorage.setItem("refreshToken", response.data.refresh);
+        localStorage.setItem("refreshToken", response.data.refresh);
+
+        // Store user data
+        if (response.data.user) {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
         }
 
         // Update auth context
-        await login(response.data.access);
+        await login(null, null, response.data.access);
 
-        // Redirect to app
+        // Navigate to app
         navigate("/app", { replace: true });
       }
     } catch (error) {
       console.error("Google login error:", error);
-      setError(error.response?.data?.detail || "Failed to login with Google");
+      setError(
+        error.response?.data?.error ||
+          "Failed to login with Google. Please try again."
+      );
     } finally {
       setIsGoogleLoading(false);
     }
