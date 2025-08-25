@@ -14,7 +14,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useAuth } from "../../contexts/AuthContext";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import axios from "axios";
 import Footer from "../layout/Footer";
 import logo from "../../assets/logo.png";
@@ -52,31 +52,24 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       const API_URL =
-        import.meta.env.VITE_API_URL || "https://k9txelite.pythonanywhere.com";
+        import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
-      // The URL matches the combined path from core/urls.py and accounts/urls.py
-      const response = await axios.post(`${API_URL}/api/api/auth/google/`, {
+      // Only send the credential token
+      const res = await axios.post(`${API_URL}/auth/google/`, {
         credential: credentialResponse.credential,
       });
 
-
-      if (response.data.access) {
-        localStorage.setItem("token", response.data.access);
-        localStorage.setItem("refreshToken", response.data.refresh);
-
-        if (response.data.user) {
-          localStorage.setItem("user", JSON.stringify(response.data.user));
+      if (res.data.access) {
+        localStorage.setItem("token", res.data.access);
+        localStorage.setItem("refreshToken", res.data.refresh);
+        if (res.data.user) {
+          localStorage.setItem("user", JSON.stringify(res.data.user));
         }
-
-        await login(null, null, response.data.access);
-        navigate("/app", { replace: true });
+        navigate("/app");
       }
-    } catch (error) {
-      console.error("Google login error:", error?.response?.data || error);
-      setError(
-        error.response?.data?.error ||
-          "Failed to login with Google. Please try again."
-      );
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Failed to login with Google. Please try again.");
     } finally {
       setIsGoogleLoading(false);
     }
@@ -330,15 +323,7 @@ const Login = () => {
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
-                onError={() => {
-                  setError("Google login failed");
-                  setIsGoogleLoading(false);
-                }}
-                useOneTap
-                theme="filled_blue"
-                size="large"
-                text="continue_with"
-                disabled={isGoogleLoading}
+                onError={() => setError("Google login failed")}
               />
             </Box>
           </Paper>
@@ -350,5 +335,3 @@ const Login = () => {
 };
 
 export default Login;
-
-
