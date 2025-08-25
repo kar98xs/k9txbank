@@ -14,7 +14,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useAuth } from "../../contexts/AuthContext";
-import { GoogleLogin, googleLogout } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import Footer from "../layout/Footer";
 import logo from "../../assets/logo.png";
@@ -55,31 +55,35 @@ const Login = () => {
         import.meta.env.VITE_API_URL ||
         "https://k9txelite.pythonanywhere.com/api";
 
-      const res = await axios.post(`${API_URL}/auth/google/`, {
-        credential: credentialResponse.credential,
-      });
+      // Send the token to your backend
+      const response = await axios.post(
+        `${API_URL}/auth/google/login/`,
+        {
+          token: credentialResponse.credential,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (res.data.access) {
-        localStorage.setItem("token", res.data.access);
-        localStorage.setItem("refreshToken", res.data.refresh);
-
-        if (res.data.user) {
-          localStorage.setItem("user", JSON.stringify(res.data.user));
+      if (response.data.access) {
+        // Store the tokens
+        localStorage.setItem("token", response.data.access);
+        if (response.data.refresh) {
+          localStorage.setItem("refreshToken", response.data.refresh);
         }
 
-        // Force refresh auth context
-        await login(null, null, res.data.access);
+        // Update auth context
+        await login(response.data.access);
 
-        // Use replace to prevent back navigation issues
+        // Redirect to app
         navigate("/app", { replace: true });
       }
-    } catch (err) {
-      console.error("Google login error:", err);
-      const errorMessage =
-        err.response?.data?.detail ||
-        err.response?.data?.error ||
-        "Failed to login with Google. Please try again.";
-      setError(errorMessage);
+    } catch (error) {
+      console.error("Google login error:", error);
+      setError(error.response?.data?.detail || "Failed to login with Google");
     } finally {
       setIsGoogleLoading(false);
     }
@@ -333,7 +337,15 @@ const Login = () => {
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <GoogleLogin
                 onSuccess={handleGoogleLogin}
-                onError={() => setError("Google login failed")}
+                onError={() => {
+                  setError("Google login failed");
+                  setIsGoogleLoading(false);
+                }}
+                useOneTap
+                theme="filled_blue"
+                size="large"
+                text="continue_with"
+                disabled={isGoogleLoading}
               />
             </Box>
           </Paper>
