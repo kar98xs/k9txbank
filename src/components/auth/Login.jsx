@@ -52,9 +52,9 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       const API_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+        import.meta.env.VITE_API_URL ||
+        "https://k9txelite.pythonanywhere.com/api";
 
-      // Only send the credential token
       const res = await axios.post(`${API_URL}/auth/google/`, {
         credential: credentialResponse.credential,
       });
@@ -62,14 +62,24 @@ const Login = () => {
       if (res.data.access) {
         localStorage.setItem("token", res.data.access);
         localStorage.setItem("refreshToken", res.data.refresh);
+
         if (res.data.user) {
           localStorage.setItem("user", JSON.stringify(res.data.user));
         }
-        navigate("/app");
+
+        // Force refresh auth context
+        await login(null, null, res.data.access);
+
+        // Use replace to prevent back navigation issues
+        navigate("/app", { replace: true });
       }
     } catch (err) {
       console.error("Google login error:", err);
-      setError("Failed to login with Google. Please try again.");
+      const errorMessage =
+        err.response?.data?.detail ||
+        err.response?.data?.error ||
+        "Failed to login with Google. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsGoogleLoading(false);
     }
