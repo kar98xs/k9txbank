@@ -55,9 +55,10 @@ const Login = () => {
         import.meta.env.VITE_API_URL || "https://k9txelite.pythonanywhere.com";
 
       // The URL matches the combined path from core/urls.py and accounts/urls.py
-        const response = await axios.post(`${API_URL}/auth/google/login/`, {
+      const response = await axios.post(`${API_URL}/api/api/auth/google/`, {
         credential: credentialResponse.credential,
       });
+
 
       if (response.data.access) {
         localStorage.setItem("token", response.data.access);
@@ -349,4 +350,5 @@ const Login = () => {
 };
 
 export default Login;
+
 
