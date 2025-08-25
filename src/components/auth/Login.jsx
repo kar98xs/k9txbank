@@ -55,25 +55,20 @@ const Login = () => {
         import.meta.env.VITE_API_URL ||
         "https://k9txelite.pythonanywhere.com/api";
 
-      // Updated endpoint to match your Django URLs
-      const response = await axios.post(`${API_URL}/auth/google/login/`, {
+      // Update the endpoint to match your Django URL pattern
+      const response = await axios.post(`${API_URL}/auth/google/`, {
         credential: credentialResponse.credential,
       });
 
       if (response.data.access) {
-        // Store tokens
         localStorage.setItem("token", response.data.access);
         localStorage.setItem("refreshToken", response.data.refresh);
 
-        // Store user data
         if (response.data.user) {
           localStorage.setItem("user", JSON.stringify(response.data.user));
         }
 
-        // Update auth context
         await login(null, null, response.data.access);
-
-        // Navigate to app
         navigate("/app", { replace: true });
       }
     } catch (error) {
