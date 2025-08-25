@@ -55,17 +55,10 @@ const Login = () => {
         import.meta.env.VITE_API_URL ||
         "https://k9txelite.pythonanywhere.com/api";
 
-      const response = await axios.post(
-        `${API_URL}/auth/google/`,
-        {
-          credential: credentialResponse.credential,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Updated endpoint to match your Django URLs
+      const response = await axios.post(`${API_URL}/auth/google/login/`, {
+        credential: credentialResponse.credential,
+      });
 
       if (response.data.access) {
         // Store tokens
@@ -84,7 +77,7 @@ const Login = () => {
         navigate("/app", { replace: true });
       }
     } catch (error) {
-      console.error("Google login error:", error);
+      console.error("Google login error:", error?.response?.data || error);
       setError(
         error.response?.data?.error ||
           "Failed to login with Google. Please try again."
