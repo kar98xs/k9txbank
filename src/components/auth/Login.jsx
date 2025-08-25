@@ -52,11 +52,10 @@ const Login = () => {
     setIsGoogleLoading(true);
     try {
       const API_URL =
-        import.meta.env.VITE_API_URL ||
-        "https://k9txelite.pythonanywhere.com/api";
+        import.meta.env.VITE_API_URL || "https://k9txelite.pythonanywhere.com";
 
-      // Update the endpoint to match your Django URL pattern
-      const response = await axios.post(`${API_URL}/auth/google/`, {
+      // The URL matches the combined path from core/urls.py and accounts/urls.py
+      const response = await axios.post(`${API_URL}/api/api/auth/google/`, {
         credential: credentialResponse.credential,
       });
 
