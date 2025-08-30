@@ -134,11 +134,7 @@ const AboutPage = () => {
           Want to share Files without Authentication{" "}
           <a href="https://k9txshare.vercel.app/"  target="_blank">click here</a>{" "}
         </p>
-        <p>
-          {" "}
-          Download GTA San Andreas Full Game now (Link Open for Limited Time)
-          <a href=" https://drive.google.com/file/d/1TaeiqN0ZU35Gs0QVx2RS9sUxFQTQxcSb/view"  target="_blank">click here</a>
-        </p>
+       
        
       </Paper>
     </Container>
@@ -146,6 +142,7 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
 
 
 
