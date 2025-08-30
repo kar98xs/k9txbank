@@ -131,8 +131,8 @@ const AboutPage = () => {
         </Grid>
              <p>
           {" "}
-          want to share Files without authentication{" "}
-          <a href="https://k9txshare.vercel.app/">click here</a>{" "}
+          Want to share Files without Authentication{" "}
+          <a href="https://k9txshare.vercel.app/"  target="_blank">click here</a>{" "}
         </p>
       </Paper>
     </Container>
@@ -140,6 +140,7 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
 
 
 
