@@ -317,15 +317,7 @@ const Login = () => {
               </Box>
             </Box>
 
-            <Divider sx={{ my: 3, borderColor: "rgba(194, 54, 54, 0.99)" }}>
-              or
-            </Divider>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <GoogleLogin
-                onSuccess={handleGoogleLogin}
-                onError={() => setError("Google login failed")}
-              />
-            </Box>
+           
           </Paper>
         </Container>
       </Box>
@@ -335,3 +327,4 @@ const Login = () => {
 };
 
 export default Login;
+
